@@ -44,7 +44,7 @@ func (kb dbKeybase) CreateMnemonic(name, passphrase string, algo SignAlgo) (Info
 	}
 
 	// encrypt and persist the key
-	info := kb.writeLocalKey(priv, name, passphrase)
+	info := kb.writeLocalKey(priv, name, passphrase, 0)
 
 	// we append the type byte to the serialized secret to help with
 	// recovery
@@ -99,7 +99,7 @@ func (kb dbKeybase) Recover(name, passphrase, seedphrase string) (Info, error) {
 	}
 
 	// encrypt and persist key.
-	public := kb.writeLocalKey(priv, name, passphrase)
+	public := kb.writeLocalKey(priv, name, passphrase, 0) //TODO: BEST TO ACTUALLY PULL THE SEQUENCE FROM TENDY
 	return public, nil
 }
 
@@ -273,19 +273,19 @@ func (kb dbKeybase) Update(name, oldpass, newpass string) error {
 		if err != nil {
 			return err
 		}
-		kb.writeLocalKey(key, name, newpass)
+		kb.writeLocalKey(key, name, newpass, info.GetSequence())
 		return nil
 	default:
 		return fmt.Errorf("Locally stored key required")
 	}
 }
 
-func (kb dbKeybase) writeLocalKey(priv crypto.PrivKey, name, passphrase string) Info {
+func (kb dbKeybase) writeLocalKey(priv crypto.PrivKey, name, passphrase string, sequence int) Info {
 	// encrypt private key using passphrase
 	privArmor := encryptArmorPrivKey(priv, passphrase)
 	// make Info
 	pub := priv.PubKey()
-	info := newLocalInfo(name, pub, privArmor)
+	info := newLocalInfo(name, pub, privArmor, sequence)
 	kb.writeInfo(info, name)
 	return info
 }

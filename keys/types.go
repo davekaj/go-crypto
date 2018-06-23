@@ -42,6 +42,8 @@ type Info interface {
 	GetName() string
 	// Public key
 	GetPubKey() crypto.PubKey
+	// Get Sequence
+	GetSequence() int
 }
 
 var _ Info = &localInfo{}
@@ -53,6 +55,7 @@ type localInfo struct {
 	Name         string        `json:"name"`
 	PubKey       crypto.PubKey `json:"pubkey"`
 	PrivKeyArmor string        `json:"privkey.armor"`
+	Sequence     int           `json:"sequence"`
 }
 
 func newLocalInfo(name string, pub crypto.PubKey, privArmor string) Info {
@@ -60,6 +63,7 @@ func newLocalInfo(name string, pub crypto.PubKey, privArmor string) Info {
 		Name:         name,
 		PubKey:       pub,
 		PrivKeyArmor: privArmor,
+		Sequence:     sequence,
 	}
 }
 
@@ -73,6 +77,10 @@ func (i localInfo) GetName() string {
 
 func (i localInfo) GetPubKey() crypto.PubKey {
 	return i.PubKey
+}
+
+func (i localInfo) GetSequence() int {
+	return i.Sequence
 }
 
 // ledgerInfo is the public information about a Ledger key
